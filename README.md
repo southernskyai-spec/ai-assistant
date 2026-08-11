@@ -8,6 +8,7 @@ A command-line AI assistant built in Python using the Anthropic (Claude) API. Su
 - Real tool/function calling, routed through a dispatch table so new tools are a one-line addition:
   - `get_weather(city)` — live weather via wttr.in (no API key required)
   - `save_note(note)` — appends a note/reminder to `notes.txt`
+  - `add_task(task)` — stores structured to-do items (with a `done` flag) in `tasks.json`
 - Secrets kept out of source code via `.env` + `python-dotenv`
 - Custom system prompt to set the assistant's persona
 

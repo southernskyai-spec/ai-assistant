@@ -2,6 +2,7 @@
 
 import os
 import sys
+import json
 import requests
 from dotenv import load_dotenv
 import anthropic
@@ -32,6 +33,27 @@ def save_note(note):
     return f"Saved note: {note}"
 
 
+TASKS_FILE = "tasks.json"
+
+
+def add_task(task):
+    """A third function - stores tasks as structured JSON instead of plain
+    text, so each one can carry extra info (here, a done/not-done flag)
+    that later code could update, unlike a plain line of text."""
+    if os.path.exists(TASKS_FILE):
+        with open(TASKS_FILE, "r", encoding="utf-8") as f:
+            tasks = json.load(f)   # turns the JSON file's text back into a Python list
+    else:
+        tasks = []
+
+    tasks.append({"task": task, "done": False})
+
+    with open(TASKS_FILE, "w", encoding="utf-8") as f:
+        json.dump(tasks, f, indent=2)   # turns the Python list back into JSON text
+
+    return f"Added task: {task}"
+
+
 # This describes each function to the AI in a format it understands: a name,
 # a description (how the AI decides WHEN to use it), and an input_schema
 # (what arguments it must provide). The AI never runs these Python functions
@@ -59,6 +81,17 @@ tools = [
             },
             "required": ["note"]
         }
+    },
+    {
+        "name": "add_task",
+        "description": "Add a new to-do item to the persistent task list.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task": {"type": "string", "description": "The task description, e.g. 'follow up with recruiter'"}
+            },
+            "required": ["task"]
+        }
     }
 ]
 
@@ -70,7 +103,8 @@ tools = [
 # adding one more entry here, nothing else changes.
 TOOL_FUNCTIONS = {
     "get_weather": get_weather,
-    "save_note": save_note
+    "save_note": save_note,
+    "add_task": add_task
 }
 
 # This list holds the entire conversation so far. Without it, every message
