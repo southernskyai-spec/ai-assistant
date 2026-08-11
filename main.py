@@ -25,11 +25,18 @@ def get_weather(city):
     return f"{current['temp_F']}F and {current['weatherDesc'][0]['value']} in {city}"
 
 
-# This describes get_weather() to the AI in a format it understands: a name,
+def save_note(note):
+    """A second real function - appends a note to notes.txt for later."""
+    with open("notes.txt", "a", encoding="utf-8") as f:
+        f.write(note + "\n")
+    return f"Saved note: {note}"
+
+
+# This describes each function to the AI in a format it understands: a name,
 # a description (how the AI decides WHEN to use it), and an input_schema
-# (what arguments it must provide - here, one required string called "city").
-# The AI never runs this Python function itself - it just tells us it wants
-# to, with what arguments, and we're the ones who actually call it below.
+# (what arguments it must provide). The AI never runs these Python functions
+# itself - it just tells us it wants to, with what arguments, and we're the
+# ones who actually call them below.
 tools = [
     {
         "name": "get_weather",
@@ -41,8 +48,30 @@ tools = [
             },
             "required": ["city"]
         }
+    },
+    {
+        "name": "save_note",
+        "description": "Save a short note or reminder to a persistent notes file for later.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "note": {"type": "string", "description": "The note text to save"}
+            },
+            "required": ["note"]
+        }
     }
 ]
+
+# A dispatch table: maps each tool's NAME (a string, matching "name" above)
+# to the ACTUAL Python function that should run when the AI asks for it.
+# This is what lets the tool-handling loop below call the right function
+# for ANY tool by name, instead of hardcoding "if name == get_weather, else
+# if name == save_note, else ..." - adding a third tool later just means
+# adding one more entry here, nothing else changes.
+TOOL_FUNCTIONS = {
+    "get_weather": get_weather,
+    "save_note": save_note
+}
 
 # This list holds the entire conversation so far. Without it, every message
 # to the API is standalone and the AI has no idea what was said earlier.
@@ -81,8 +110,14 @@ while True:
 
         tool_results = []
         for block in response.content:
-            if block.type == "tool_use" and block.name == "get_weather":
-                result = get_weather(block.input["city"])
+            if block.type == "tool_use":
+                function = TOOL_FUNCTIONS[block.name]
+                # block.input is a dict like {"city": "Chicago"} or
+                # {"note": "buy milk"}. The ** unpacks it into matching
+                # keyword arguments, e.g. function(city="Chicago") -
+                # this works because our input_schema property names
+                # (Piece 3) match each function's real parameter names.
+                result = function(**block.input)
                 # tool_use_id links our answer back to this specific request,
                 # since the AI could technically ask for several tools at once.
                 tool_results.append({

@@ -1,11 +1,13 @@
 # AI Assistant (CLI)
 
-A command-line AI assistant built in Python using the Anthropic (Claude) API. Supports multi-turn conversation memory and real tool/function calling, so the AI can take real actions (currently: check live weather) instead of only generating text.
+A command-line AI assistant built in Python using the Anthropic (Claude) API. Supports multi-turn conversation memory and real tool/function calling, so the AI can take real actions instead of only generating text.
 
 ## Features
 
 - Persistent conversation history — the assistant remembers earlier turns in the same session
-- Real tool/function calling — the AI can call `get_weather(city)` (via wttr.in, no API key required) and use the real result in its answer
+- Real tool/function calling, routed through a dispatch table so new tools are a one-line addition:
+  - `get_weather(city)` — live weather via wttr.in (no API key required)
+  - `save_note(note)` — appends a note/reminder to `notes.txt`
 - Secrets kept out of source code via `.env` + `python-dotenv`
 - Custom system prompt to set the assistant's persona
 
