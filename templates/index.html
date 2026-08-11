@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Assistant</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    max-width: 600px;
+    margin: 40px auto;
+    background: #f4f4f7;
+  }
+  h1 {
+    font-size: 1.3rem;
+  }
+  #chat {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    height: 400px;
+    overflow-y: auto;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .msg {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+    white-space: pre-wrap;
+  }
+  .user {
+    background: #d6e4ff;
+    margin-left: auto;
+    text-align: right;
+  }
+  .assistant {
+    background: #eee;
+  }
+  form {
+    display: flex;
+    gap: 8px;
+  }
+  input {
+    flex: 1;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  button {
+    padding: 10px 16px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    background: #2952cc;
+    color: white;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+</style>
+</head>
+<body>
+
+<h1>AI Assistant</h1>
+<div id="chat"></div>
+
+<form id="chat-form">
+  <input id="message" type="text" placeholder="Ask me anything..." autocomplete="off" required>
+  <button type="submit">Send</button>
+</form>
+
+<script>
+  const chat = document.getElementById("chat");
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("message");
+
+  function addMessage(text, sender) {
+    const div = document.createElement("div");
+    div.className = "msg " + sender;
+    div.textContent = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // "submit" fires when the form is sent (clicking Send, or pressing Enter).
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();   // stops the page from doing a full reload, which is the browser's default for forms
+
+    const userText = input.value;
+    addMessage(userText, "user");
+    input.value = "";
+    input.disabled = true;
+
+    // fetch() sends a request from the browser to our own server, at the
+    // /chat route we defined in app.py - same GET/POST pattern from your
+    // Python requests lessons, just running in the browser this time.
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userText })
+    });
+
+    const data = await response.json();
+    addMessage(data.reply, "assistant");
+    input.disabled = false;
+    input.focus();
+  });
+</script>
+
+</body>
+</html>
