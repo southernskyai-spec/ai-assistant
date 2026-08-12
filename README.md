@@ -7,9 +7,10 @@ An AI assistant built in Python using the Anthropic (Claude) API, available both
 - Persistent conversation history — the assistant remembers earlier turns in the same session
 - Real tool/function calling, routed through a dispatch table so new tools are a one-line addition:
   - `get_weather(city)` — live weather via wttr.in (no API key required)
-  - `save_note(note)` — appends a note/reminder to `notes.txt`
+  - `save_note(note)` / `list_notes()` — appends notes to, and reads back from, `notes.txt`
   - `add_task(task)` — stores structured to-do items (with a `done` flag) in `tasks.json`
 - Two interfaces sharing the same AI logic (`assistant.py`): a CLI (`main.py`) and a web UI (`app.py`, built with Flask)
+- Web UI is password-protected and gives each visitor their own isolated conversation history
 - Secrets kept out of source code via `.env` + `python-dotenv`
 - Custom system prompt to set the assistant's persona
 
@@ -19,10 +20,13 @@ An AI assistant built in Python using the Anthropic (Claude) API, available both
    ```
    pip install -r requirements.txt
    ```
-2. Create a `.env` file in the project root with your own Anthropic API key (get one at console.anthropic.com):
+2. Create a `.env` file in the project root:
    ```
    ANTHROPIC_API_KEY=your-key-here
+   FLASK_SECRET_KEY=any-random-string
+   ASSISTANT_PASSWORD=choose-a-password
    ```
+   (Get an Anthropic key at console.anthropic.com. `FLASK_SECRET_KEY` just needs to be a long random string — it signs session cookies. `ASSISTANT_PASSWORD` gates access to the web UI.)
 
 ## Running it
 

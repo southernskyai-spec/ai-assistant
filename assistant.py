@@ -27,6 +27,20 @@ def save_note(note):
     return f"Saved note: {note}"
 
 
+def list_notes():
+    """Takes no arguments - not every tool needs input."""
+    if not os.path.exists("notes.txt"):
+        return "No notes saved yet."
+
+    with open("notes.txt", "r", encoding="utf-8") as f:
+        notes = [line.strip() for line in f if line.strip()]
+
+    if not notes:
+        return "No notes saved yet."
+
+    return "\n".join(f"{i + 1}. {note}" for i, note in enumerate(notes))
+
+
 TASKS_FILE = "tasks.json"
 
 
@@ -69,6 +83,18 @@ tools = [
         }
     },
     {
+        "name": "list_notes",
+        "description": "List all previously saved notes.",
+        # No arguments needed, so "properties" is empty and nothing is
+        # "required" - but the object/properties structure is still needed,
+        # the API expects every tool to have an input_schema shaped this way.
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    },
+    {
         "name": "add_task",
         "description": "Add a new to-do item to the persistent task list.",
         "input_schema": {
@@ -84,6 +110,7 @@ tools = [
 TOOL_FUNCTIONS = {
     "get_weather": get_weather,
     "save_note": save_note,
+    "list_notes": list_notes,
     "add_task": add_task
 }
 
